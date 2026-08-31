@@ -127,6 +127,31 @@ export async function createServiceLog(unitId: string, formData: FormData) {
   redirect(`/units/${unitId}/logs/${log.id}`);
 }
 
+export async function setPhotoVisibility(
+  unitId: string,
+  logId: string,
+  photoId: string,
+  visible: boolean,
+) {
+  const user = await getCurrentUser();
+  if (!user) redirect("/login");
+  if (user.role !== "admin") {
+    redirect(`/units/${unitId}/logs/${logId}?error=${encodeURIComponent("Only admins can change photo visibility")}`);
+  }
+
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("inspection_log_photos")
+    .update({ visible_to_technicians: visible })
+    .eq("id", photoId);
+
+  if (error) {
+    redirect(`/units/${unitId}/logs/${logId}?error=${encodeURIComponent(error.message)}`);
+  }
+
+  revalidatePath(`/units/${unitId}/logs/${logId}`);
+}
+
 export async function deleteLog(unitId: string, logId: string) {
   const user = await getCurrentUser();
   if (!user) redirect("/login");

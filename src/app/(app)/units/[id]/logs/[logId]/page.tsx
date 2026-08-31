@@ -1,7 +1,8 @@
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { getCurrentUser } from "@/lib/current-user";
 import type { ChecklistItem, InspectionLogItem, InspectionLogPhoto } from "@/lib/types";
-import { deleteLog } from "../actions";
+import { deleteLog, setPhotoVisibility } from "../actions";
 import { DeleteLogButton } from "../delete-log-button";
 
 const RESPONSE_LABELS: Record<string, string> = {
@@ -48,6 +49,8 @@ export default async function LogDetailPage({
   const { id: unitId, logId } = await params;
   const { error } = await searchParams;
   const supabase = await createClient();
+  const user = await getCurrentUser();
+  const isAdmin = user?.role === "admin";
 
   const { data: log } = await supabase
     .from("inspection_logs")
@@ -101,13 +104,23 @@ export default async function LogDetailPage({
         <p className="rounded-md bg-red-50 px-4 py-3 text-sm text-red-700">{error}</p>
       )}
 
-      <div>
-        <h1 className="text-xl font-bold">
-          {template ? template.name : inventoryItem ? `Service: ${inventoryItem.name}` : "Service log"}
-        </h1>
-        <p className="text-gray-600">
-          {new Date(log.performed_at).toLocaleString()} · {performedBy?.name ?? "Unknown"}
-        </p>
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-xl font-bold">
+            {template ? template.name : inventoryItem ? `Service: ${inventoryItem.name}` : "Service log"}
+          </h1>
+          <p className="text-gray-600">
+            {new Date(log.performed_at).toLocaleString()} · {performedBy?.name ?? "Unknown"}
+          </p>
+        </div>
+        <a
+          href={`/units/${unitId}/logs/${logId}/pdf`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex-shrink-0 rounded-lg bg-navy-700 px-3 py-2 text-sm font-medium text-white"
+        >
+          Download PDF
+        </a>
       </div>
 
       <span
@@ -140,16 +153,46 @@ export default async function LogDetailPage({
       )}
 
       {photos && photos.length > 0 && (
-        <div className="grid grid-cols-3 gap-2">
-          {photos.map((photo) => (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              key={photo.id}
-              src={photo.photo_url}
-              alt="Log attachment"
-              className="aspect-square w-full rounded-lg object-cover"
-            />
-          ))}
+        <div>
+          {isAdmin && (
+            <p className="mb-2 text-xs text-gray-500">
+              Photos are admin-only by default. Tap &quot;Share with techs&quot; to let assigned technicians see one.
+            </p>
+          )}
+          <div className="grid grid-cols-3 gap-2">
+            {photos.map((photo) => (
+              <div key={photo.id} className="flex flex-col gap-1">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={photo.photo_url}
+                  alt="Log attachment"
+                  className="aspect-square w-full rounded-lg object-cover"
+                />
+                {isAdmin && (
+                  <form
+                    action={setPhotoVisibility.bind(
+                      null,
+                      unitId,
+                      logId,
+                      photo.id,
+                      !photo.visible_to_technicians,
+                    )}
+                  >
+                    <button
+                      type="submit"
+                      className={`w-full rounded-md px-2 py-1 text-[11px] font-medium ${
+                        photo.visible_to_technicians
+                          ? "bg-green-50 text-green-700"
+                          : "bg-gray-100 text-gray-600"
+                      }`}
+                    >
+                      {photo.visible_to_technicians ? "Visible to techs" : "Share with techs"}
+                    </button>
+                  </form>
+                )}
+              </div>
+            ))}
+          </div>
         </div>
       )}
 

@@ -79,5 +79,6 @@ export type InspectionLogPhoto = {
   id: string;
   inspection_log_id: string;
   photo_url: string;
+  visible_to_technicians: boolean;
   created_at: string;
 };
