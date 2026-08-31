@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { SubmitButton } from "@/components/submit-button";
@@ -70,6 +71,18 @@ export default async function JoinPage({
           Create account
         </SubmitButton>
       </form>
+
+      <p className="text-center text-xs text-gray-500">
+        By creating an account you agree to our{" "}
+        <Link href="/terms" className="font-medium text-navy-700">
+          Terms of Service
+        </Link>{" "}
+        and{" "}
+        <Link href="/privacy" className="font-medium text-navy-700">
+          Privacy Policy
+        </Link>
+        .
+      </p>
     </main>
   );
 }

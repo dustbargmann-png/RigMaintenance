@@ -62,6 +62,18 @@ export default async function SignupPage({
         </SubmitButton>
       </form>
 
+      <p className="text-center text-xs text-gray-500">
+        By creating an account you agree to our{" "}
+        <Link href="/terms" className="font-medium text-navy-700">
+          Terms of Service
+        </Link>{" "}
+        and{" "}
+        <Link href="/privacy" className="font-medium text-navy-700">
+          Privacy Policy
+        </Link>
+        .
+      </p>
+
       <p className="text-center text-sm text-gray-600">
         Already have an account?{" "}
         <Link href="/login" className="font-medium text-navy-700">

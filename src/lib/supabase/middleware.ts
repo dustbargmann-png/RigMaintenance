@@ -3,6 +3,10 @@ import { NextResponse, type NextRequest } from "next/server";
 
 const PUBLIC_PATHS = ["/login", "/signup", "/join", "/auth", "/update-password", "/forgot-password"];
 
+// Viewable by anyone regardless of login state — unlike PUBLIC_PATHS, a signed-in
+// user isn't redirected away from these (e.g. reading the Terms while logged in).
+const ALWAYS_PUBLIC_PATHS = ["/terms", "/privacy"];
+
 export async function updateSession(request: NextRequest) {
   // A Supabase email link (confirmation, invite, password recovery) can land
   // its one-time `code` on whatever bare path the project's Site URL points
@@ -41,8 +45,9 @@ export async function updateSession(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   const isPublicPath = PUBLIC_PATHS.some((path) => request.nextUrl.pathname.startsWith(path));
+  const isAlwaysPublicPath = ALWAYS_PUBLIC_PATHS.some((path) => request.nextUrl.pathname.startsWith(path));
 
-  if (!user && !isPublicPath) {
+  if (!user && !isPublicPath && !isAlwaysPublicPath) {
     const loginUrl = request.nextUrl.clone();
     loginUrl.pathname = "/login";
     return NextResponse.redirect(loginUrl);
