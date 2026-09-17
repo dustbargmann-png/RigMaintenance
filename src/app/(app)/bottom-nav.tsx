@@ -43,11 +43,21 @@ function PhotoIcon() {
   );
 }
 
+function UserIcon() {
+  return (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="8" r="4" />
+      <path d="M4 20c0-3.5 3.5-6 8-6s8 2.5 8 6" />
+    </svg>
+  );
+}
+
 const TABS = [
   { href: "/", label: "Dashboard", Icon: HomeIcon },
   { href: "/units", label: "Units", Icon: TrailerIcon },
   { href: "/checklists", label: "Checklists", Icon: ClipboardIcon },
   { href: "/photos", label: "Photos", Icon: PhotoIcon },
+  { href: "/profile", label: "Profile", Icon: UserIcon },
 ];
 
 function isActive(pathname: string, href: string) {
